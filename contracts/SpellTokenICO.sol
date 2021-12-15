@@ -14,6 +14,10 @@ interface ERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 }
 
+interface ERC721 {
+    function balanceOf(address owner) external view returns (uint256);
+}
+
 contract SpellTokenICO {
 
     AggregatorV3Interface internal priceFeedETHUSD;
@@ -22,25 +26,28 @@ contract SpellTokenICO {
     address private studentContractAddress;
     address private tokenAddress;
     address private daiTokenAddress;
+    address private nftSSUTokenAddress;
 
-    constructor(address _tokenAddress, address _daiTokenAddress, address _studentContractAddress, address _chainLinkETHUSDRinkeby, address _chainLinkDAIUSDRinkeby) {
+    constructor(address _tokenAddress, address _daiTokenAddress, address _studentContractAddress, address _chainLinkETHUSDRinkeby, address _chainLinkDAIUSDRinkeby, address _nftSSUTokenAddress) {
         owner = msg.sender;
         priceFeedETHUSD = AggregatorV3Interface(_chainLinkETHUSDRinkeby);
         priceFeedDAIUSD = AggregatorV3Interface(_chainLinkDAIUSDRinkeby);
         studentContractAddress = _studentContractAddress;
         tokenAddress = _tokenAddress;
         daiTokenAddress = _daiTokenAddress;
+        nftSSUTokenAddress = _nftSSUTokenAddress;
     }
 
     receive() external payable {
-        send();
+        buyForETH();
     }
 
     fallback() external payable {
-        send();
+        buyForETH();
     }
 
-    function send() private {
+    function buyForETH() public payable {
+        require(ERC721(nftSSUTokenAddress).balanceOf(msg.sender) > 0, "You need special NFT on you balance to get tokens");
         require(msg.value > 0, "Send ETH to buy some tokens");
         
         ( , int priceETHUSD, , , ) = priceFeedETHUSD.latestRoundData();
@@ -60,6 +67,7 @@ contract SpellTokenICO {
     function buyForDAI(uint daiAmount) public {
         require(daiAmount > 0, "Non-zero DAI amount is required");
         require(ERC20(daiTokenAddress).allowance(msg.sender, address(this)) >= daiAmount, "Spending DAI is not allowed");
+        require(ERC721(nftSSUTokenAddress).balanceOf(msg.sender) > 0, "You need special NFT on you balance to get tokens");
 
         ( , int priceDAIUSD, , , ) = priceFeedDAIUSD.latestRoundData();
         uint tokenAmount = daiAmount * uint(priceDAIUSD) / (10 ** priceFeedDAIUSD.decimals());
