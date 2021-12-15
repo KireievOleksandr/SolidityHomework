@@ -18,25 +18,18 @@ interface ERC721 {
     function balanceOf(address owner) external view returns (uint256);
 }
 
-contract SpellTokenICO {
+contract SpellTokenICOImplementationV2 {
 
+    address public owner;
+    address payable public implementation;
+    uint256 public version;
+    
     AggregatorV3Interface internal priceFeedETHUSD;
     AggregatorV3Interface internal priceFeedDAIUSD;
-    address public owner;
-    address private studentContractAddress;
-    address private tokenAddress;
-    address private daiTokenAddress;
-    address private nftSSUTokenAddress;
-
-    constructor(address _tokenAddress, address _daiTokenAddress, address _studentContractAddress, address _chainLinkETHUSDRinkeby, address _chainLinkDAIUSDRinkeby, address _nftSSUTokenAddress) {
-        owner = msg.sender;
-        priceFeedETHUSD = AggregatorV3Interface(_chainLinkETHUSDRinkeby);
-        priceFeedDAIUSD = AggregatorV3Interface(_chainLinkDAIUSDRinkeby);
-        studentContractAddress = _studentContractAddress;
-        tokenAddress = _tokenAddress;
-        daiTokenAddress = _daiTokenAddress;
-        nftSSUTokenAddress = _nftSSUTokenAddress;
-    }
+    address public studentContractAddress;
+    address public tokenAddress;
+    address public daiTokenAddress;
+    address public nftSSUTokenAddress;
 
     receive() external payable {
         buyForETH();
